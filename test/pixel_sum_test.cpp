@@ -29,7 +29,7 @@ TEST_F(PS_BasicTest, can_create_class_with_valid_parameters)
 // 1. object cannot be created if buffer is not provided
 TEST_F(PS_BasicTest, failed_create_class_nullptr)
 {
-    ASSERT_THROW(pixelSum = std::make_unique<PixelSum>(nullptr, 2, 2), std::invalid_argument);
+    ASSERT_THROW(pixelSum = std::make_unique<PixelSum>(nullptr, 2, 2), NullImageProvided);
     ASSERT_TRUE(pixelSum == nullptr);
 }
 
@@ -37,14 +37,14 @@ TEST_F(PS_BasicTest, failed_create_class_nullptr)
 // 2.1 x - negative
 TEST_F(PS_BasicTest, failed_create_class_negative_x_size)
 {
-    ASSERT_THROW(pixelSum = std::make_unique<PixelSum>(image.data(), -1, 2), std::invalid_argument);
+    ASSERT_THROW(pixelSum = std::make_unique<PixelSum>(image.data(), -1, 2), NegativeOrZeroSizeProvided);
     ASSERT_TRUE(pixelSum == nullptr);
 }
 
 // 2.2 y - negative
 TEST_F(PS_BasicTest, failed_create_class_negative_y_size)
 {
-    ASSERT_THROW(pixelSum = std::make_unique<PixelSum>(image.data(), 2, -1), std::invalid_argument);
+    ASSERT_THROW(pixelSum = std::make_unique<PixelSum>(image.data(), 2, -1), NegativeOrZeroSizeProvided);
     ASSERT_TRUE(pixelSum == nullptr);
 }
 
@@ -52,14 +52,14 @@ TEST_F(PS_BasicTest, failed_create_class_negative_y_size)
 // 3.1 x - 0
 TEST_F(PS_BasicTest, failed_create_class_zero_x_size)
 {
-    ASSERT_THROW(pixelSum = std::make_unique<PixelSum>(image.data(), 0, 2), std::invalid_argument);
+    ASSERT_THROW(pixelSum = std::make_unique<PixelSum>(image.data(), 0, 2), NegativeOrZeroSizeProvided);
     ASSERT_TRUE(pixelSum == nullptr);
 }
 
 // 3.2 y - 0
 TEST_F(PS_BasicTest, failed_create_class_zero_y_size)
 {
-    ASSERT_THROW(pixelSum = std::make_unique<PixelSum>(image.data(), 2, 0), std::invalid_argument);
+    ASSERT_THROW(pixelSum = std::make_unique<PixelSum>(image.data(), 2, 0), NegativeOrZeroSizeProvided);
     ASSERT_TRUE(pixelSum == nullptr);
 }
 

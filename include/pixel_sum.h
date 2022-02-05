@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <stdexcept>
 //----------------------------------------------------------------------------
 // Class for providing fast region queries from an 8-bit pixel buffer.
 // Note: all coordinates are *inclusive* and clamped internally to the borders
@@ -14,6 +15,21 @@
 //
 // The width and height of the buffer dimensions < 4096 x 4096.
 //----------------------------------------------------------------------------
+class NullImageProvided : public std::exception
+{
+    // nothing to do here
+};
+
+class NegativeOrZeroSizeProvided : public std::exception
+{
+    // nothing to do here
+};
+
+class MaximumSizeExceeded : public std::exception
+{
+    // nothing to do here
+};
+
 class PixelSum
 {
 public:

@@ -1,5 +1,4 @@
 #include "include/pixel_sum.h"
-#include <stdexcept>
 
 PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
 {
@@ -8,13 +7,14 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
     //         according to the standard this can be acheived by throwing exception.
     if (!buffer)
     {
-        throw std::invalid_argument("Null image provided");
+        throw NullImageProvided();
     }
     // well since no clear specification about sizes restrictions was provided
     // i assume i can treat 0 as an invalid size
+    // comment: to reduce amount of checks I'd propose to use unsiged type
     if (xWidth <= 0 || yHeight <= 0)
     {
-        throw std::invalid_argument("Negative or Zero image sizes provided");
+        throw NegativeOrZeroSizeProvided();
     }
 }
 
