@@ -177,3 +177,85 @@ TEST_F(PS_IntegralImageTest, out_of_image_y_rectangle_bounds)
     uint32_t calcValue = naiveCalculation(0, 0, 2, 2);
     ASSERT_EQ(calcValue, iiValue);
 }
+
+// check the density of the signal.
+struct RectangularBounds
+{
+    // input coordinates
+    int32_t x0;
+    int32_t y0;
+
+    int32_t x1;
+    int32_t y1;
+
+    //validation coordinates
+    int32_t vX0;
+    int32_t vY0;
+
+    int32_t vX1;
+    int32_t vY1;
+};
+
+class PS_getPixelSumAdvancedTest : public ::testing::TestWithParam<RectangularBounds>
+{
+protected:
+    
+    const static int m_imageWidth = 500;
+    const static int m_imageHeight = 500;
+    static std::array<unsigned char, m_imageWidth* m_imageHeight> m_image;
+    std::unique_ptr<PixelSum> m_pixelSum;
+
+    static void SetUpTestCase()
+    {
+        for (auto& pixel : m_image)
+        {
+            pixel = (uint8_t)(rand() % 255);
+        }
+    }
+
+    uint32_t naiveCalculation(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1)
+    {
+        uint32_t result = 0;
+        for (uint32_t x = x0; x <= x1; ++x)
+        {
+            for (uint32_t y = y0; y <= y1; ++y)
+            {
+                result += m_image[x + y * m_imageWidth];
+            }
+        }
+        return result;
+    }
+
+    virtual void SetUp()
+    {
+        m_pixelSum = std::make_unique<PixelSum>(m_image.data(), m_imageWidth, m_imageHeight);
+    }
+
+    virtual void TearDown()
+    {
+    }
+};
+std::array<unsigned char, PS_getPixelSumAdvancedTest::m_imageWidth * PS_getPixelSumAdvancedTest::m_imageHeight> PS_getPixelSumAdvancedTest::m_image = {};
+
+
+TEST_P(PS_getPixelSumAdvancedTest, get_pixel_sum)
+{
+    const auto& coordinates = GetParam();
+    uint32_t iiValue = m_pixelSum->getPixelSum(coordinates.x0, coordinates.y0, coordinates.x1, coordinates.y1);
+    uint32_t calcValue = naiveCalculation(coordinates.vX0, coordinates.vY0, coordinates.vX1, coordinates.vY1);
+    ASSERT_EQ(calcValue, iiValue);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    PS_GetPixelSumTest, PS_getPixelSumAdvancedTest,
+    ::testing::Values(
+        RectangularBounds{ 0, 0, 10, 10, 0, 0, 10, 10 }
+        ),
+    [](const ::testing::TestParamInfo<PS_getPixelSumAdvancedTest::ParamType>& info)
+    {
+        std::ostringstream out;
+        out << info.param.x0 << "_" << info.param.y0 << "_"
+            << info.param.x1 << "_" << info.param.y1;
+        return out.str();
+    }
+);
