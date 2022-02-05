@@ -135,3 +135,45 @@ TEST_F(PS_IntegralImageTest, check_0_0_item)
     uint32_t iiValue = m_pixelSum->getPixelSum(0, 0, 0, 0);
     ASSERT_EQ(m_image[0], iiValue);
 }
+
+TEST_F(PS_IntegralImageTest, negative_x_rectangle_bounds)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(-2, 0, 1, 1);
+    uint32_t calcValue = naiveCalculation(0, 0, 1, 1);
+    ASSERT_EQ(calcValue, iiValue);
+}
+
+TEST_F(PS_IntegralImageTest, negative_y_rectangle_bounds)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(0, -2, 1, 1);
+    uint32_t calcValue = naiveCalculation(0, 0, 1, 1);
+    ASSERT_EQ(calcValue, iiValue);
+}
+
+TEST_F(PS_IntegralImageTest, inverted_x_rectangle_bounds)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(2, 0, 0, 2);
+    uint32_t calcValue = naiveCalculation(0, 0, 2, 2);
+    ASSERT_EQ(calcValue, iiValue);
+}
+
+TEST_F(PS_IntegralImageTest, inverted_y_rectangle_bounds)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(0, 2, 2, 0);
+    uint32_t calcValue = naiveCalculation(0, 0, 2, 2);
+    ASSERT_EQ(calcValue, iiValue);
+}
+
+TEST_F(PS_IntegralImageTest, out_of_image_x_rectangle_bounds)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(0, 0, 5, 2);
+    uint32_t calcValue = naiveCalculation(0, 0, 2, 2);
+    ASSERT_EQ(calcValue, iiValue);
+}
+
+TEST_F(PS_IntegralImageTest, out_of_image_y_rectangle_bounds)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(0, 0, 2, 5);
+    uint32_t calcValue = naiveCalculation(0, 0, 2, 2);
+    ASSERT_EQ(calcValue, iiValue);
+}

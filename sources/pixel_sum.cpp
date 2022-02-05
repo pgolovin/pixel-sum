@@ -38,7 +38,8 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
     // 0 X X X
     // 0 X X X
     m_integralImageWidth = xWidth + m_shift;
-    m_integralImage.resize(m_integralImageWidth * (yHeight + m_shift));
+    m_integralImageHeight = yHeight + m_shift;
+    m_integralImage.resize(m_integralImageWidth * m_integralImageHeight);
     
     // all stored parameters are related to the original image.
     m_imageWidth = xWidth;
@@ -89,12 +90,21 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
 
 unsigned int PixelSum::getPixelSum(int x0, int y0, int x1, int y1) const
 {
+    // input correction. swap coordinates if order is incorrect
+    if (x0 > x1)
+    {
+        std::swap(x0, x1);
+    }
+    if (y0 > y1)
+    {
+        std::swap(y0, y1);
+    }
     // use algorythm proposed by Frank Crow to get integral image values
     // integral_image_value = integralValue[x0 - 1, y0 - 1] + integralValue[x1,y1] - integralValue[x0 - 1, y1] - integralValue[x1, y0 - 1]
-    const uint32_t linearizedY0 = y0 * (m_imageWidth + m_shift);
-    const uint32_t linearizedY1 = (y1 + m_shift) * (m_imageWidth + m_shift);
-    const uint32_t correctedX0 = x0;
-    const uint32_t correctedX1 = x1 + m_shift;
+    const uint32_t linearizedY0 = std::max(0, y0) * m_integralImageWidth;
+    const uint32_t linearizedY1 = std::min(y1 + m_shift, m_integralImageHeight - 1) * m_integralImageWidth;
+    const uint32_t correctedX0 = std::max(0, x0);
+    const uint32_t correctedX1 = std::min(x1 + m_shift, m_integralImageWidth - 1);
 
     return m_integralImage.at(correctedX0 + linearizedY0)
         + m_integralImage.at(correctedX1 + linearizedY1)

@@ -59,6 +59,7 @@ private:
     //    the same situation if cell size of initial image is not a Byte but Word
     std::vector<uint32_t> m_integralImage;
     uint32_t m_integralImageWidth = 1;
+    uint32_t m_integralImageHeight = 1;
 
     // algorithm uses paradigm to store summed area table with shift according to original image
     // see details in implementation
