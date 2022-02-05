@@ -2,6 +2,7 @@
 #include "include/pixel_sum.h"
 #include <gtest/gtest.h>
 #include <memory>
+#include <array>
 #include <exception>
 
 class PS_BasicTest : public ::testing::Test
@@ -78,3 +79,33 @@ TEST_F(PS_BasicTest, failed_create_class_exceed_y_size)
     ASSERT_TRUE(pixelSum == nullptr);
 }
 
+// algorythmic tests
+class PS_IntegralImageTest : public ::testing::Test
+{
+protected:
+    const static int m_imageWidth = 3;
+    const static int m_imageHeight = 3;
+    const std::array<unsigned char, m_imageWidth * m_imageHeight> m_image = { 1, 0, 1, 0, 1, 0, 1, 0, 1 };
+    std::unique_ptr<PixelSum> m_pixelSum;
+
+    virtual void SetUp()
+    {
+        m_pixelSum = std::make_unique<PixelSum>(m_image.data(), m_imageWidth, m_imageHeight);
+    }
+
+    virtual void TearDown()
+    {
+    }
+};
+
+TEST_F(PS_IntegralImageTest, single_item_equals_to_input_value)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(1, 1, 1, 1);
+    ASSERT_EQ(1U, iiValue);
+}
+
+TEST_F(PS_IntegralImageTest, block_of_items_image)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(1, 1, 2, 2);
+    ASSERT_EQ(2U, iiValue);
+}

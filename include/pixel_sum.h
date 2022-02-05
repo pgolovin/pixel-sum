@@ -55,5 +55,7 @@ private:
     // A: uint32_t will not work here we should use wider types like uint64_t
     //    the same situation if cell size of initial image is not a Byte but Word
     std::vector<uint32_t> m_integralImage;
+    uint32_t m_imageWidth = 0;
+    uint32_t m_imageHeight = 0;
 };
 //EOF
