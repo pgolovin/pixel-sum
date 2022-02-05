@@ -88,6 +88,19 @@ protected:
     const std::array<unsigned char, m_imageWidth * m_imageHeight> m_image = { 1, 0, 1, 0, 1, 0, 1, 0, 1 };
     std::unique_ptr<PixelSum> m_pixelSum;
 
+    uint32_t naiveCalculation(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1)
+    {
+        uint32_t result = 0;
+        for (uint32_t x = x0; x <= x1; ++x)
+        {
+            for (uint32_t y = y0; y <= y1; ++y)
+            {
+                result += m_image[x + y * m_imageWidth];
+            }
+        }
+        return result;
+    }
+
     virtual void SetUp()
     {
         m_pixelSum = std::make_unique<PixelSum>(m_image.data(), m_imageWidth, m_imageHeight);
@@ -108,4 +121,11 @@ TEST_F(PS_IntegralImageTest, block_of_items_image)
 {
     uint32_t iiValue = m_pixelSum->getPixelSum(1, 1, 2, 2);
     ASSERT_EQ(2U, iiValue);
+}
+
+TEST_F(PS_IntegralImageTest, full_image)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(0, 0, 2, 2);
+    uint32_t calcValue = naiveCalculation(0, 0, 2, 2);
+    ASSERT_EQ(calcValue, iiValue);
 }

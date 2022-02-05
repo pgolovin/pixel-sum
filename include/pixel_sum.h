@@ -47,6 +47,9 @@ public:
 
     static int bufferDimensionLimit;
 private:
+    uint32_t m_imageWidth = 0;
+    uint32_t m_imageHeight = 0;
+
     // Since our field is 4096sq max and each cell is 1Byte long
     // the max number that can be stored in integral image if all cells contains max available value
     // is 2^12 (4096) *2^12 * 2^8 = 2^(12+12+8) = 2^32 so uint32_t should sutisfy our purpose.
@@ -55,7 +58,10 @@ private:
     // A: uint32_t will not work here we should use wider types like uint64_t
     //    the same situation if cell size of initial image is not a Byte but Word
     std::vector<uint32_t> m_integralImage;
-    uint32_t m_imageWidth = 0;
-    uint32_t m_imageHeight = 0;
+    uint32_t m_integralImageWidth = 1;
+
+    // algorithm uses paradigm to store summed area table with shift according to original image
+    // see details in implementation
+    const uint32_t m_shift = 1;
 };
 //EOF
