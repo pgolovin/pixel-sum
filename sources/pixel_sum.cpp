@@ -32,7 +32,7 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
     // so we have to avoid unnecessary checks at all costs
     // when we are asking for the region with x0 = 0 or y0 = 0. because x0 - 1 or y0 - 1
     // in this case will lead to negative item access and crash
-    // since we have no memory restrictions lets add fake fields here filled with zeroes:
+    // since we have no memory restrictions lets add safe zones here filled with zeroes:
     // 0 0 0 0
     // 0 X X X
     // 0 X X X
@@ -43,12 +43,12 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
     // all stored parameters are related to the original image.
     m_imageWidth = xWidth;
     m_imageHeight = yHeight;
-    // create x = 0 fake field
+    // create x = 0 safe zone
     for (uint32_t i = 0; i < m_integralImageWidth; ++i)
     {
         m_integralImage[i] = 0;
     }
-    // the first item in every line will be 0. here we create y = 0 fake field
+    // the first item in every line will be 0. here we create y = 0 safe zone
     // ii here abbreviation for integral image
     uint32_t iiY = m_shift * m_integralImageWidth;
     m_integralImage[iiY] = 0;
@@ -71,7 +71,7 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
     {
         const uint32_t y = line * m_imageWidth;
         iiY = (line + m_shift) * m_integralImageWidth;
-        // the first item in every line will be 0. y fake field
+        // the first item in every line will be 0. y safe zone
         m_integralImage[iiY] = 0;
         // 1st valid item is equal to sum of original image value and callculated integral value on previous line
         m_integralImage[m_shift + iiY] = m_integralImage[m_shift + (iiY - m_integralImageWidth)] + buffer[y];
