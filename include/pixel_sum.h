@@ -45,6 +45,7 @@ public:
     int getNonZeroCount(int x0, int y0, int x1, int y1) const;
     double getNonZeroAverage(int x0, int y0, int x1, int y1) const;
 
+    static int bufferDimensionLimit;
 private:
     // Since our field is 4096sq max and each cell is 1Byte long
     // the max number that can be stored in integral image if all cells contains max available value

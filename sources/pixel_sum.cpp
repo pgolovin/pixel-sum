@@ -1,5 +1,7 @@
 #include "include/pixel_sum.h"
 
+int PixelSum::bufferDimensionLimit = 4096;
+
 PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
 {
     // Choose exception here
@@ -15,6 +17,10 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
     if (xWidth <= 0 || yHeight <= 0)
     {
         throw NegativeOrZeroSizeProvided();
+    }
+    if (xWidth > bufferDimensionLimit || yHeight > bufferDimensionLimit)
+    {
+        throw MaximumSizeExceeded();
     }
 }
 

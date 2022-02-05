@@ -63,3 +63,18 @@ TEST_F(PS_BasicTest, failed_create_class_zero_y_size)
     ASSERT_TRUE(pixelSum == nullptr);
 }
 
+// 4. user provided incorrect sizes for the image, exceeding algorithm limits
+// 4.1 width restriction
+TEST_F(PS_BasicTest, failed_create_class_exceed_x_size)
+{
+    ASSERT_THROW(pixelSum = std::make_unique<PixelSum>(image.data(), PixelSum::bufferDimensionLimit + 1, 2), MaximumSizeExceeded);
+    ASSERT_TRUE(pixelSum == nullptr);
+}
+
+// 4.1 height restriction
+TEST_F(PS_BasicTest, failed_create_class_exceed_y_size)
+{
+    ASSERT_THROW(pixelSum = std::make_unique<PixelSum>(image.data(), 2, PixelSum::bufferDimensionLimit + 1), MaximumSizeExceeded);
+    ASSERT_TRUE(pixelSum == nullptr);
+}
+
