@@ -90,7 +90,13 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
 
 unsigned int PixelSum::getPixelSum(int x0, int y0, int x1, int y1) const
 {
+    // TODO: whole input correction block loosk ugle. refactoring is required. but tomorrow.
+
     // input correction. swap coordinates if order is incorrect
+    if ((x0 < 0 && x1 < 0) || (y0 < 0 && y1 < 0))
+    {
+        return 0;
+    }
     if (x0 > x1)
     {
         std::swap(x0, x1);

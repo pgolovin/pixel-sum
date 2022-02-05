@@ -178,7 +178,32 @@ TEST_F(PS_IntegralImageTest, out_of_image_y_rectangle_bounds)
     ASSERT_EQ(calcValue, iiValue);
 }
 
-// check the density of the signal.
+TEST_F(PS_IntegralImageTest, full_out_of_image_negative_x_rectangle_bounds)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(-3, 0, -5, 5);
+    ASSERT_EQ(0U, iiValue);
+}
+
+TEST_F(PS_IntegralImageTest, full_out_of_image_negative_y_rectangle_bounds)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(0, -5, 2, -3);
+    ASSERT_EQ(0U, iiValue);
+}
+
+TEST_F(PS_IntegralImageTest, full_out_of_image_x_rectangle_bounds)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(3, 0, 5, 5);
+    ASSERT_EQ(0U, iiValue);
+}
+
+TEST_F(PS_IntegralImageTest, full_out_of_image_y_rectangle_bounds)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(0, 3, 2, 5);
+    ASSERT_EQ(0U, iiValue);
+}
+
+// advanced parametrized test, to check functionality in more complicated and unpredictable case
+// thanks to rand()
 struct RectangularBounds
 {
     // input coordinates
@@ -249,13 +274,12 @@ TEST_P(PS_getPixelSumAdvancedTest, get_pixel_sum)
 INSTANTIATE_TEST_SUITE_P(
     PS_GetPixelSumTest, PS_getPixelSumAdvancedTest,
     ::testing::Values(
-        RectangularBounds{ 0, 0, 10, 10, 0, 0, 10, 10 }
-        ),
-    [](const ::testing::TestParamInfo<PS_getPixelSumAdvancedTest::ParamType>& info)
-    {
-        std::ostringstream out;
-        out << info.param.x0 << "_" << info.param.y0 << "_"
-            << info.param.x1 << "_" << info.param.y1;
-        return out.str();
-    }
+        RectangularBounds{ 0, 0, 0, 0, 0, 0, 0, 0 },
+        RectangularBounds{ 0, 0, 499, 499, 0, 0, 499, 499 },
+        RectangularBounds{ 1, 1, 499, 499, 1, 1, 499, 499 },
+        RectangularBounds{ -5, 1, 600, 499, 0, 1, 499, 499 },
+        RectangularBounds{ 300, 100, 600, 499, 300, 100, 499, 499 },
+        RectangularBounds{ 200, 400, 400, -5, 200, 0, 400, 400 },
+        RectangularBounds{ 400, 400, 200, -5, 200, 0, 400, 400 }
+        )
 );
