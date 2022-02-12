@@ -67,17 +67,13 @@ TEST_F(PS_NonZeroesAverageTests, zero_items_avg_is_zero)
 
 TEST_F(PS_NonZeroesAverageTests, full_image_counted_precalculated)
 {
-    ASSERT_EQ((double)m_pixelSumValue/m_nonZeroes, m_pixelSum->getNonZeroAverage(0, 0, m_imageWidth - 1, m_imageHeight - 1));
+    ASSERT_DOUBLE_EQ((double)m_pixelSumValue/m_nonZeroes, m_pixelSum->getNonZeroAverage(0, 0, m_imageWidth - 1, m_imageHeight - 1));
 }
 
 TEST_F(PS_NonZeroesAverageTests, full_image_counted)
 {
-    double nonZeroAverageValue = naiveCalculations::nonZeroAvg(m_image, m_imageWidth, 0, 0, m_imageWidth - 1, m_imageHeight - 1);
-    double getNonZeroAverageValue = m_pixelSum->getNonZeroAverage(0, 0, m_imageWidth - 1, m_imageHeight - 1);
-    ASSERT_DOUBLE_EQ(nonZeroAverageValue, getNonZeroAverageValue);
-
-    // ASSERT_EQ(naiveCalculations::nonZeroAvg(m_image, m_imageWidth, 0, 0, m_imageWidth - 1, m_imageHeight - 1),
-    //     m_pixelSum->getNonZeroAverage(0, 0, m_imageWidth - 1, m_imageHeight - 1));
+    ASSERT_DOUBLE_EQ(naiveCalculations::nonZeroAvg(m_image, m_imageWidth, 0, 0, m_imageWidth - 1, m_imageHeight - 1),
+         m_pixelSum->getNonZeroAverage(0, 0, m_imageWidth - 1, m_imageHeight - 1));
 }
 
 TEST_F(PS_NonZeroesAverageTests, sub_image_counted)
@@ -121,5 +117,21 @@ TEST_F(PS_NonZeroesAverageTests, negative_out_of_image)
 TEST_F(PS_NonZeroesAverageTests, positive_out_of_image)
 {
     ASSERT_DOUBLE_EQ(0, m_pixelSum->getNonZeroAverage(m_imageWidth + 100, 10, m_imageWidth + 25, 50));
+}
+
+
+TEST_F(PS_NonZeroesAverageTests, full_image_counted_for_copied_object)
+{
+    std::unique_ptr<PixelSum> pixelSum = std::make_unique<PixelSum>(*m_pixelSum);
+    ASSERT_DOUBLE_EQ(pixelSum->getNonZeroAverage(0, 0, m_imageWidth - 1, m_imageHeight - 1), m_pixelSum->getNonZeroAverage(0, 0, m_imageWidth - 1, m_imageHeight - 1));
+}
+
+TEST_F(PS_NonZeroesAverageTests, full_image_counted_for_assigned_object)
+{
+    std::vector<unsigned char> local_image = { 0,0,0,0 };
+    std::unique_ptr<PixelSum> pixelSum = std::make_unique<PixelSum>(local_image.data(), 2, 2);
+    ASSERT_NE(pixelSum->getNonZeroAverage(0, 0, m_imageWidth - 1, m_imageHeight - 1), m_pixelSum->getNonZeroAverage(0, 0, m_imageWidth - 1, m_imageHeight - 1));
+    *pixelSum = *m_pixelSum;
+    ASSERT_DOUBLE_EQ(pixelSum->getNonZeroAverage(0, 0, m_imageWidth - 1, m_imageHeight - 1), m_pixelSum->getNonZeroAverage(0, 0, m_imageWidth - 1, m_imageHeight - 1));
 }
 

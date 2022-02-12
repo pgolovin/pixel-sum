@@ -25,6 +25,14 @@ protected:
     }
 };
 
+TEST_F(PS_IntegralImageTest, test_from_task)
+{
+    std::vector<unsigned char> local_image = { 0,4,0,2,1,0 };
+    m_pixelSum = std::make_unique<PixelSum>(local_image.data(), 3, 2);
+    uint32_t iiValue = m_pixelSum->getPixelSum(0, 0, 2, 1);
+    ASSERT_EQ(7U, iiValue);
+}
+
 TEST_F(PS_IntegralImageTest, single_pixel_equals_to_input_value)
 {
     uint32_t iiValue = m_pixelSum->getPixelSum(1, 1, 1, 1);
@@ -126,6 +134,21 @@ TEST_F(PS_IntegralImageTest, away_of_image_rectangle_bounds)
 {
     uint32_t iiValue = m_pixelSum->getPixelSum(10, 15, 15, 10);
     ASSERT_EQ(0U, iiValue);
+}
+
+TEST_F(PS_IntegralImageTest, full_image_counted_for_copied_object)
+{
+    std::unique_ptr<PixelSum> pixelSum = std::make_unique<PixelSum>(*m_pixelSum);
+    ASSERT_EQ(pixelSum->getPixelSum(0, 0, m_imageWidth - 1, m_imageHeight - 1), m_pixelSum->getPixelSum(0, 0, m_imageWidth - 1, m_imageHeight - 1));
+}
+
+TEST_F(PS_IntegralImageTest, full_image_counted_for_assigned_object)
+{
+    std::vector<unsigned char> local_image = { 0,0,0,0 };
+    std::unique_ptr<PixelSum> pixelSum = std::make_unique<PixelSum>(local_image.data(), 2, 2);
+    ASSERT_NE(pixelSum->getPixelSum(0, 0, m_imageWidth - 1, m_imageHeight - 1), m_pixelSum->getPixelSum(0, 0, m_imageWidth - 1, m_imageHeight - 1));
+    *pixelSum = *m_pixelSum;
+    ASSERT_EQ(pixelSum->getPixelSum(0, 0, m_imageWidth - 1, m_imageHeight - 1), m_pixelSum->getPixelSum(0, 0, m_imageWidth - 1, m_imageHeight - 1));
 }
 
 // advanced parametrized test, to check functionality in more complicated and unpredictable case

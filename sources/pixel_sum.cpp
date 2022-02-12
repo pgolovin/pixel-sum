@@ -1,8 +1,6 @@
 #include "include/pixel_sum.h"
 #include <assert.h>
 
-int PixelSum::bufferDimensionLimit = 4096;
-
 PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
 {
     // Choose exception here
@@ -27,13 +25,12 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
     // looks like i didn't miss any obvious input issue. 
     // The only remaining is discrepancy between buffer real size and provided sizes
 
-    // Calculate integral image
-    // since calculations require to check previous x or y value we should secure situation 
+    // Calculate integral image.
+    // value retrival algorythm requires to check previous x (x-1) and y (y-1) values we should secure border case
     // also keep in mind that retrieving functions should return value as fast as possible
-    // so we have to avoid unnecessary checks at all costs
-    // when we are asking for the region with x0 = 0 or y0 = 0. because x0 - 1 or y0 - 1
-    // in this case will lead to negative item access and crash
-    // since we have no memory restrictions lets add safe zones here filled with zeroes:
+    // so we have to avoid unnecessary checks at all costs when we are asking for the region 
+    // where x0 = 0 or y0 = 0. x0 - 1 or y0 - 1. this case will lead to negative indexed item access and crash.
+    // we have no memory restrictions lets add safe zones here filled with zeroes:
     // 0 0 0 0
     // 0 X X X
     // 0 X X X
@@ -46,6 +43,7 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
     // all stored parameters are related to the original image.
     m_imageWidth = xWidth;
     m_imageHeight = yHeight;
+
     // create x = 0 safe zone
     for (uint32_t i = 0; i < m_integralImageWidth; ++i)
     {
@@ -85,11 +83,10 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
 
 PixelSum::PixelSum(const PixelSum& original)
 {
-    //assuming that original is always valid, since you cannot construct invalid object
-    //reinterpret_cast case it is the only possible solution to break the algorythm
-    //but in the case of reinterpret cast hack, it is hard to detect violation. 
+    //assuming that original is always valid, user cannot construct invalid object.
+    //reinterpret_cast case is the only possible solution to break the algorythm
+    //it is hard to detect violation in the case of reinterpret cast. 
     //need to create some keys/checksums to validate input data. assume this is out of the task scope
-
     copyContent(original);
 }
 
@@ -104,6 +101,7 @@ void PixelSum::copyContent(const PixelSum& original)
 {
     // just copy content of the original object
     m_integralImage = original.m_integralImage;
+    m_nonZeroIntegralImage = original.m_nonZeroIntegralImage;
     m_imageHeight = original.m_imageHeight;
     m_imageWidth = original.m_imageWidth;
     m_integralImageHeight = original.m_integralImageHeight;

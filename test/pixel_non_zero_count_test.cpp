@@ -116,3 +116,18 @@ TEST_F(PS_NonZeroesCountTests, positive_out_of_image)
 {
     ASSERT_EQ(0, m_pixelSum->getNonZeroCount(m_imageWidth + 100, 10, m_imageWidth + 25, 50));
 }
+
+TEST_F(PS_NonZeroesCountTests, full_image_counted_for_copied_object)
+{
+    std::unique_ptr<PixelSum> pixelSum = std::make_unique<PixelSum>(*m_pixelSum);
+    ASSERT_EQ(pixelSum->getNonZeroCount(0, 0, m_imageWidth - 1, m_imageHeight - 1), m_pixelSum->getNonZeroCount(0, 0, m_imageWidth - 1, m_imageHeight - 1));
+}
+
+TEST_F(PS_NonZeroesCountTests, full_image_counted_for_assigned_object)
+{
+    std::vector<unsigned char> local_image = { 0,0,0,0 };
+    std::unique_ptr<PixelSum> pixelSum = std::make_unique<PixelSum>(local_image.data(), 2, 2);
+    ASSERT_NE(pixelSum->getNonZeroCount(0, 0, m_imageWidth - 1, m_imageHeight - 1), m_pixelSum->getNonZeroCount(0, 0, m_imageWidth - 1, m_imageHeight - 1));
+    *pixelSum = *m_pixelSum;
+    ASSERT_EQ(pixelSum->getNonZeroCount(0, 0, m_imageWidth - 1, m_imageHeight - 1), m_pixelSum->getNonZeroCount(0, 0, m_imageWidth - 1, m_imageHeight - 1));
+}

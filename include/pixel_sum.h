@@ -34,6 +34,7 @@ class PixelSum
 {
 public:
 
+    // original interface
     PixelSum(const unsigned char* buffer, int xWidth, int yHeight);
     ~PixelSum(void) {};
 
@@ -45,29 +46,25 @@ public:
     int getNonZeroCount(int x0, int y0, int x1, int y1) const;
     double getNonZeroAverage(int x0, int y0, int x1, int y1) const;
 
-    static int bufferDimensionLimit;
+    static const int bufferDimensionLimit = 4096;
 private:
-
     void copyContent(const PixelSum& original);
+    // validate input parameters and convert them to linearized indexes in a 1D vector
+    // with respect to negative values and bounds restricitions
     uint32_t validateAndFixInput(int& x0, int& y0, int& x1, int& y1) const;
     // Calculate value using proposed algorythms for Frank Crow for MipMaps
-    // it should be inlined here, i suppose compiler will do this for me;
+    // it should be inlined here, I suppose compiler will do this for me;
     uint32_t calculateFrankCrowValue(const std::vector<uint32_t>& table, int x0, int y0, int x1, int y1) const;
 
     uint32_t m_imageWidth = 0;
     uint32_t m_imageHeight = 0;
 
-    // Since our field is 4096sq max and each cell is 1Byte long
-    // the max number that can be stored in integral image if all cells contains max available value
-    // is 2^12 (4096) *2^12 * 2^8 = 2^(12+12+8) = 2^32 so uint32_t should sutisfy our purpose.
-    // 
-    // Q: what if size restrictions are not 4096 per edge but bigger,
-    // A: uint32_t will not work here we should use wider types like uint64_t
-    //    the same situation if cell size of initial image is not a Byte but Word
+    // Store integral image (summed table) instead of original image
     std::vector<uint32_t> m_integralImage;
-    // For non-zeroes use the same approach, create summed table where instead of falue will have 
+    // For non-zeroes use the same approach, create summed table where 
     //  - 0 if pixel is zero
     //  - 1 if pixel has value
+    // eill be summed instead of value
     std::vector<uint32_t> m_nonZeroIntegralImage;
 
     uint32_t m_integralImageWidth = 1;
