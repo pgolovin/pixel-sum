@@ -25,7 +25,7 @@ protected:
     }
 };
 
-TEST_F(PS_IntegralImageTest, single_item_equals_to_input_value)
+TEST_F(PS_IntegralImageTest, single_pixel_equals_to_input_value)
 {
     uint32_t iiValue = m_pixelSum->getPixelSum(1, 1, 1, 1);
     ASSERT_EQ(1U, iiValue);

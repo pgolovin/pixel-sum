@@ -12,8 +12,8 @@ class PS_NonZeroesCountTests : public ::testing::Test
 protected:
 
     const static int m_imageWidth = 500;
-    const static int m_imageHeight = 400;
-    static uint32_t m_nonZeroes;
+    const static int m_imageHeight = 900;
+    static int m_nonZeroes;
     static std::vector<unsigned char> m_image;
     std::unique_ptr<PixelSum> m_pixelSum;
 
@@ -22,9 +22,13 @@ protected:
         m_image.resize(m_imageWidth * m_imageHeight);
         for (auto& pixel : m_image)
         {
-            uint8_t zero_value = rand() % 3 == 0 ? 1 : 0; // make only 1/3rd part of elements non-zeroes
-            m_nonZeroes += zero_value;
-            pixel = (uint8_t)(rand() % 255) * zero_value;
+            // make only 1/3rd part of elements non-zeroes
+            pixel = (rand() % 3 == 0) ? (uint8_t)(rand() % 255) : 0;
+
+            if (pixel > 0)
+            {
+                ++m_nonZeroes;
+            }
         }
     }
 
@@ -38,7 +42,7 @@ protected:
     }
 };
 
-uint32_t PS_NonZeroesCountTests::m_nonZeroes = 0;
+int PS_NonZeroesCountTests::m_nonZeroes = 0;
 std::vector<unsigned char> PS_NonZeroesCountTests::m_image = {};
 
 TEST_F(PS_NonZeroesCountTests, single_item_zeroed_not_counted)
@@ -57,6 +61,11 @@ TEST_F(PS_NonZeroesCountTests, single_item_zeroed_not_counted)
             }
         }
     }
+}
+
+TEST_F(PS_NonZeroesCountTests, full_image_counted_precalculated)
+{
+    ASSERT_EQ(m_nonZeroes, m_pixelSum->getNonZeroCount(0, 0, m_imageWidth - 1, m_imageHeight - 1));
 }
 
 TEST_F(PS_NonZeroesCountTests, full_image_counted)

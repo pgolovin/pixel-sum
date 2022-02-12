@@ -37,7 +37,7 @@ protected:
 
 std::vector<unsigned char> PS_AverageTests::m_image = {};
 
-TEST_F(PS_AverageTests, single_item_equals_to_input_value)
+TEST_F(PS_AverageTests, single_pixel_equals_to_input_value)
 {
     for (int x = 0; x < m_imageWidth; ++x)
     {
@@ -50,8 +50,9 @@ TEST_F(PS_AverageTests, single_item_equals_to_input_value)
 
 TEST_F(PS_AverageTests, full_image_average)
 {
-    ASSERT_DOUBLE_EQ(naiveCalculations::average(m_image, m_imageWidth, 0, 0, m_imageWidth-1, m_imageHeight-1),
-        m_pixelSum->getPixelAverage(0, 0, m_imageWidth-1, m_imageHeight-1));
+    double average = (double)naiveCalculations::sum(m_image, m_imageWidth, 0, 0, m_imageWidth - 1, m_imageHeight - 1) /
+        (m_imageWidth * m_imageHeight);
+    ASSERT_DOUBLE_EQ(average, m_pixelSum->getPixelAverage(0, 0, m_imageWidth-1, m_imageHeight-1));
 }
 
 TEST_F(PS_AverageTests, partially_out_of_image_average_negative)

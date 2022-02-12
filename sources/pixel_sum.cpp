@@ -141,6 +141,21 @@ int PixelSum::getNonZeroCount(int x0, int y0, int x1, int y1) const
     return calculateFrankCrowValue(m_nonZeroIntegralImage, x0, y0, x1, y1);
 }
 
+double PixelSum::getNonZeroAverage(int x0, int y0, int x1, int y1) const
+{
+    if (!validateAndFixInput(x0, y0, x1, y1))
+    {
+        return 0;
+    }
+    // nan is not allowed for us here. we should return 0 if no elements were found in requested widnow
+    int num_elements = calculateFrankCrowValue(m_nonZeroIntegralImage, x0, y0, x1, y1);
+    if (0 == num_elements)
+    {
+        return 0;
+    }
+    return (double)calculateFrankCrowValue(m_integralImage, x0, y0, x1, y1)/num_elements;
+}
+
 uint32_t PixelSum::calculateFrankCrowValue(const std::vector<uint32_t>& table, int x0, int y0, int x1, int y1) const
 {
     // use algorythm proposed by Frank Crow to get integral image values O(1)

@@ -46,7 +46,8 @@ set(TEST_SOURCES
     "test/pixel_sum_base_test.cpp"
     "test/pixel_sum_test.cpp"
     "test/pixel_average_test.cpp"
-    "test/pixel_non_zero_count_test.cpp")
+    "test/pixel_non_zero_count_test.cpp"
+    "test/pixel_non_zero_avg_test.cpp")
 
 # add test sub-project
 add_executable(pixel_sum_tests ${TEST_SOURCES})
