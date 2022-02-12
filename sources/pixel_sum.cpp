@@ -1,4 +1,5 @@
 #include "include/pixel_sum.h"
+#include <assert.h>
 
 int PixelSum::bufferDimensionLimit = 4096;
 
@@ -110,8 +111,37 @@ void PixelSum::copyContent(const PixelSum& original)
 
 unsigned int PixelSum::getPixelSum(int x0, int y0, int x1, int y1) const
 {
-    // TODO: whole input correction block loosk ugle. refactoring is required. but tomorrow.
+    // if no elements are requested, return 0 as their sum;
+    if (!validateAndFixInput(x0, y0, x1, y1))
+    {
+        return 0;
+    }
 
+    return calculateFrankCrowValue(m_integralImage, x0, y0, x1, y1);
+}
+
+double PixelSum::getPixelAverage(int x0, int y0, int x1, int y1) const
+{
+    uint32_t num_elements = validateAndFixInput(x0, y0, x1, y1);
+    if (0 == num_elements)
+    {
+        return 0;
+    }
+
+    return (double)calculateFrankCrowValue(m_integralImage, x0, y0, x1, y1) / num_elements;
+}
+
+uint32_t PixelSum::calculateFrankCrowValue(const std::vector<uint32_t>& table, int x0, int y0, int x1, int y1) const
+{
+    // use algorythm proposed by Frank Crow to get integral image values O(1)
+    return table.at(x0 + y0) + table.at(x1 + y1) - table.at(x0 + y1) - table.at(x1 + y0);
+}
+
+
+uint32_t PixelSum::validateAndFixInput(int& x0, int& y0, int& x1, int& y1) const
+{
+    // calculate number of elements that we should use in our calculations
+    uint32_t num_elements = 0;
     // input correction. swap coordinates if order is incorrect
     if (x0 > x1)
     {
@@ -121,24 +151,29 @@ unsigned int PixelSum::getPixelSum(int x0, int y0, int x1, int y1) const
     {
         std::swap(y0, y1);
     }
-    if (x1 < 0 || 
-        y1 < 0 || 
-        x0 > static_cast<int>(m_imageWidth) || 
+    //return out of bound if the requested area is fully out of image.
+    if (x1 < 0 || y1 < 0 ||
+        x0 > static_cast<int>(m_imageWidth) ||
         y0 > static_cast<int>(m_imageHeight))
     {
-        return 0;
+        return num_elements; // in this case it is 0;
     }
-    // use algorythm proposed by Frank Crow to get integral image values
-    // integral_image_value = integralValue[x0 - 1, y0 - 1] + integralValue[x1,y1] - integralValue[x0 - 1, y1] - integralValue[x1, y0 - 1]
-    const uint32_t linearizedY0 = std::max(0, y0) * m_integralImageWidth;
-    const uint32_t linearizedY1 = std::min(y1 + m_shift, m_integralImageHeight - m_shift) * m_integralImageWidth;
-    const uint32_t correctedX0 = std::max(0, x0);
-    const uint32_t correctedX1 = std::min(x1 + m_shift, m_integralImageWidth - m_shift);
+    // save number of elements here.
+    // add 1 for both coordinates since boundaries are inclusive
+    num_elements = (x1 - x0 + 1) * (y1 - y0 + 1);
 
-    return m_integralImage.at(correctedX0 + linearizedY0)
-        + m_integralImage.at(correctedX1 + linearizedY1)
-        - m_integralImage.at(correctedX0 + linearizedY1)
-        - m_integralImage.at(correctedX1 + linearizedY0);
+    // it is impossible to have 0 here, if it's happened, then all checks above has a misstake
+    assert(num_elements > 0);
+
+    // move bounds inside the image, and linearize them.
+    // from this moment coordinates are no longer represent real number of elements
+    // that we should use in our calculations, they are truncated by the image
+    y0 = std::max(0, y0) * m_integralImageWidth;
+    y1 = std::min(y1 + m_shift, m_integralImageHeight - m_shift) * m_integralImageWidth;
+    x0 = std::max(0, x0);
+    x1 = std::min(x1 + m_shift, m_integralImageWidth - m_shift);
+
+    return num_elements;
 }
 
 // EOF

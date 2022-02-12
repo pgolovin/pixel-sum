@@ -49,6 +49,10 @@ public:
 private:
 
     void copyContent(const PixelSum& original);
+    uint32_t validateAndFixInput(int& x0, int& y0, int& x1, int& y1) const;
+    // calculate value using proposed algorythms for Frank Crow for MipMaps
+    // it should be inlined here, i suppose compiler will do this for me;
+    uint32_t calculateFrankCrowValue(const std::vector<uint32_t>& table, int x0, int y0, int x1, int y1) const;
 
     uint32_t m_imageWidth = 0;
     uint32_t m_imageHeight = 0;

@@ -40,8 +40,11 @@ find_package(gtest)
 # set the project name
 set(TEST_SOURCES
     "test/test.cpp"
+    "test/support_functions.h"
+    "test/support_functions.cpp"
     "test/pixel_sum_base_test.cpp"
-    "test/pixel_sum_test.cpp")
+    "test/pixel_sum_test.cpp"
+    "test/pixel_average_test.cpp")
 # add sub-project
 add_executable(pixel_sum_tests ${TEST_SOURCES})
 

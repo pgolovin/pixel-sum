@@ -1,8 +1,10 @@
 
 #include "include/pixel_sum.h"
+#include "test/support_functions.h"
+
 #include <gtest/gtest.h>
 #include <memory>
-#include <array>
+#include <vector>
 
 // algorythmic tests
 class PS_IntegralImageTest : public ::testing::Test
@@ -10,21 +12,8 @@ class PS_IntegralImageTest : public ::testing::Test
 protected:
     const static int m_imageWidth = 3;
     const static int m_imageHeight = 3;
-    const std::array<unsigned char, m_imageWidth * m_imageHeight> m_image = { 1, 0, 1, 0, 1, 0, 1, 0, 1 };
+    const std::vector<unsigned char> m_image = { 1, 0, 1, 0, 1, 0, 1, 0, 1 };
     std::unique_ptr<PixelSum> m_pixelSum;
-
-    uint32_t naiveCalculation(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1)
-    {
-        uint32_t result = 0;
-        for (uint32_t x = x0; x <= x1; ++x)
-        {
-            for (uint32_t y = y0; y <= y1; ++y)
-            {
-                result += m_image[x + y * m_imageWidth];
-            }
-        }
-        return result;
-    }
 
     virtual void SetUp()
     {
@@ -51,7 +40,7 @@ TEST_F(PS_IntegralImageTest, block_of_items_image)
 TEST_F(PS_IntegralImageTest, full_image)
 {
     uint32_t iiValue = m_pixelSum->getPixelSum(0, 0, 2, 2);
-    uint32_t calcValue = naiveCalculation(0, 0, 2, 2);
+    uint32_t calcValue = naiveCalculations::sum(m_image, m_imageWidth, 0, 0, 2, 2);
     ASSERT_EQ(calcValue, iiValue);
 }
 
@@ -64,42 +53,42 @@ TEST_F(PS_IntegralImageTest, check_0_0_item)
 TEST_F(PS_IntegralImageTest, negative_x_rectangle_bounds)
 {
     uint32_t iiValue = m_pixelSum->getPixelSum(-2, 0, 1, 1);
-    uint32_t calcValue = naiveCalculation(0, 0, 1, 1);
+    uint32_t calcValue = naiveCalculations::sum(m_image, m_imageWidth, 0, 0, 1, 1);
     ASSERT_EQ(calcValue, iiValue);
 }
 
 TEST_F(PS_IntegralImageTest, negative_y_rectangle_bounds)
 {
     uint32_t iiValue = m_pixelSum->getPixelSum(0, -2, 1, 1);
-    uint32_t calcValue = naiveCalculation(0, 0, 1, 1);
+    uint32_t calcValue = naiveCalculations::sum(m_image, m_imageWidth, 0, 0, 1, 1);
     ASSERT_EQ(calcValue, iiValue);
 }
 
 TEST_F(PS_IntegralImageTest, inverted_x_rectangle_bounds)
 {
     uint32_t iiValue = m_pixelSum->getPixelSum(2, 0, 0, 2);
-    uint32_t calcValue = naiveCalculation(0, 0, 2, 2);
+    uint32_t calcValue = naiveCalculations::sum(m_image, m_imageWidth, 0, 0, 2, 2);
     ASSERT_EQ(calcValue, iiValue);
 }
 
 TEST_F(PS_IntegralImageTest, inverted_y_rectangle_bounds)
 {
     uint32_t iiValue = m_pixelSum->getPixelSum(0, 2, 2, 0);
-    uint32_t calcValue = naiveCalculation(0, 0, 2, 2);
+    uint32_t calcValue = naiveCalculations::sum(m_image, m_imageWidth, 0, 0, 2, 2);
     ASSERT_EQ(calcValue, iiValue);
 }
 
 TEST_F(PS_IntegralImageTest, out_of_image_x_rectangle_bounds)
 {
     uint32_t iiValue = m_pixelSum->getPixelSum(0, 0, 5, 2);
-    uint32_t calcValue = naiveCalculation(0, 0, 2, 2);
+    uint32_t calcValue = naiveCalculations::sum(m_image, m_imageWidth, 0, 0, 2, 2);
     ASSERT_EQ(calcValue, iiValue);
 }
 
 TEST_F(PS_IntegralImageTest, out_of_image_y_rectangle_bounds)
 {
     uint32_t iiValue = m_pixelSum->getPixelSum(0, 0, 2, 5);
-    uint32_t calcValue = naiveCalculation(0, 0, 2, 2);
+    uint32_t calcValue = naiveCalculations::sum(m_image, m_imageWidth, 0, 0, 2, 2);
     ASSERT_EQ(calcValue, iiValue);
 }
 
@@ -164,28 +153,16 @@ protected:
     
     const static int m_imageWidth = 500;
     const static int m_imageHeight = 500;
-    static std::array<unsigned char, m_imageWidth* m_imageHeight> m_image;
+    static std::vector<unsigned char> m_image;
     std::unique_ptr<PixelSum> m_pixelSum;
 
     static void SetUpTestCase()
     {
+        m_image.resize(m_imageWidth * m_imageHeight);
         for (auto& pixel : m_image)
         {
             pixel = (uint8_t)(rand() % 255);
         }
-    }
-
-    uint32_t naiveCalculation(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1)
-    {
-        uint32_t result = 0;
-        for (uint32_t x = x0; x <= x1; ++x)
-        {
-            for (uint32_t y = y0; y <= y1; ++y)
-            {
-                result += m_image[x + y * m_imageWidth];
-            }
-        }
-        return result;
     }
 
     virtual void SetUp()
@@ -197,14 +174,14 @@ protected:
     {
     }
 };
-std::array<unsigned char, PS_getPixelSumAdvancedTest::m_imageWidth * PS_getPixelSumAdvancedTest::m_imageHeight> PS_getPixelSumAdvancedTest::m_image = {};
+std::vector<unsigned char> PS_getPixelSumAdvancedTest::m_image = {};
 
 
 TEST_P(PS_getPixelSumAdvancedTest, get_pixel_sum)
 {
     const auto& coordinates = GetParam();
     uint32_t iiValue = m_pixelSum->getPixelSum(coordinates.x0, coordinates.y0, coordinates.x1, coordinates.y1);
-    uint32_t calcValue = naiveCalculation(coordinates.vX0, coordinates.vY0, coordinates.vX1, coordinates.vY1);
+    uint32_t calcValue = naiveCalculations::sum(m_image, m_imageWidth, coordinates.vX0, coordinates.vY0, coordinates.vX1, coordinates.vY1);
     ASSERT_EQ(calcValue, iiValue);
 }
 
