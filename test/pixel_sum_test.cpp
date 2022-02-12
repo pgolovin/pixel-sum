@@ -202,6 +202,18 @@ TEST_F(PS_IntegralImageTest, full_out_of_image_y_rectangle_bounds)
     ASSERT_EQ(0U, iiValue);
 }
 
+TEST_F(PS_IntegralImageTest, partially_away_of_image_rectangle_bounds)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(2, 15, 15, 2);
+    ASSERT_EQ(1U, iiValue);
+}
+
+TEST_F(PS_IntegralImageTest, away_of_image_rectangle_bounds)
+{
+    uint32_t iiValue = m_pixelSum->getPixelSum(10, 15, 15, 10);
+    ASSERT_EQ(0U, iiValue);
+}
+
 // advanced parametrized test, to check functionality in more complicated and unpredictable case
 // thanks to rand()
 struct RectangularBounds

@@ -58,26 +58,19 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
     // step one: plant the initial seed: [0,0] (here [1,1]) item equals to the value on the provided image
     m_integralImage[m_shift + iiY] = buffer[0];
 
-    // calculate the 1st line of the integral image
-    // make it as a separate step to reduce amount of if's in the algorithm
-    // well it is not an effecient optimization, but allow to read code better
-    for (uint32_t x = 1; x < m_imageWidth; ++x)
-    {
-        const uint32_t iiX = x + m_shift;
-        m_integralImage[iiX + iiY] = m_integralImage[iiX - 1 + iiY] + buffer[x];
-    }
-    // calculate the rest of the integral image using 2x2 window
+    // calculate the integral image using 2x2 window
     // integralValue[x,y] = buffer[x,y] + integralValue[x-1,y] + integralValue[x, y-1] - integralValue[x-1,y-1] 
-    for (uint32_t line = 1; line < m_imageHeight; ++line)
+    for (uint32_t line = 0; line < m_imageHeight; ++line)
     {
         const uint32_t y = line * m_imageWidth;
         iiY = (line + m_shift) * m_integralImageWidth;
         // the first item in every line will be 0. y safe zone
         m_integralImage[iiY] = 0;
-        // 1st valid item is equal to sum of original image value and callculated integral value on previous line
-        m_integralImage[m_shift + iiY] = m_integralImage[m_shift + (iiY - m_integralImageWidth)] + buffer[y];
 
-        for (uint32_t x = 1; x < m_imageWidth; ++x)
+        // calculate the integral image. since safe zone values a 0, 
+        // we don't need to add special case for border coordinates.
+
+        for (uint32_t x = 0; x < m_imageWidth; ++x)
         {
             const uint32_t iiX = x + m_shift;
             m_integralImage[iiX + iiY] = buffer[x + y]
@@ -93,10 +86,6 @@ unsigned int PixelSum::getPixelSum(int x0, int y0, int x1, int y1) const
     // TODO: whole input correction block loosk ugle. refactoring is required. but tomorrow.
 
     // input correction. swap coordinates if order is incorrect
-    if ((x0 < 0 && x1 < 0) || (y0 < 0 && y1 < 0))
-    {
-        return 0;
-    }
     if (x0 > x1)
     {
         std::swap(x0, x1);
@@ -105,12 +94,19 @@ unsigned int PixelSum::getPixelSum(int x0, int y0, int x1, int y1) const
     {
         std::swap(y0, y1);
     }
+    if (x1 < 0 || 
+        y1 < 0 || 
+        x0 > static_cast<int>(m_imageWidth) || 
+        y0 > static_cast<int>(m_imageHeight))
+    {
+        return 0;
+    }
     // use algorythm proposed by Frank Crow to get integral image values
     // integral_image_value = integralValue[x0 - 1, y0 - 1] + integralValue[x1,y1] - integralValue[x0 - 1, y1] - integralValue[x1, y0 - 1]
     const uint32_t linearizedY0 = std::max(0, y0) * m_integralImageWidth;
-    const uint32_t linearizedY1 = std::min(y1 + m_shift, m_integralImageHeight - 1) * m_integralImageWidth;
+    const uint32_t linearizedY1 = std::min(y1 + m_shift, m_integralImageHeight - m_shift) * m_integralImageWidth;
     const uint32_t correctedX0 = std::max(0, x0);
-    const uint32_t correctedX1 = std::min(x1 + m_shift, m_integralImageWidth - 1);
+    const uint32_t correctedX1 = std::min(x1 + m_shift, m_integralImageWidth - m_shift);
 
     return m_integralImage.at(correctedX0 + linearizedY0)
         + m_integralImage.at(correctedX1 + linearizedY1)
