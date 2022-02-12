@@ -144,11 +144,23 @@ TEST_F(PS_IntegralImageTest, full_image_counted_for_copied_object)
 
 TEST_F(PS_IntegralImageTest, full_image_counted_for_assigned_object)
 {
-    std::vector<unsigned char> local_image = { 0,0,0,0 };
-    std::unique_ptr<PixelSum> pixelSum = std::make_unique<PixelSum>(local_image.data(), 2, 2);
+    std::vector<unsigned char> localImage = { 0,0,0,0 };
+    std::unique_ptr<PixelSum> pixelSum = std::make_unique<PixelSum>(localImage.data(), 2, 2);
     ASSERT_NE(pixelSum->getPixelSum(0, 0, m_imageWidth - 1, m_imageHeight - 1), m_pixelSum->getPixelSum(0, 0, m_imageWidth - 1, m_imageHeight - 1));
     *pixelSum = *m_pixelSum;
     ASSERT_EQ(pixelSum->getPixelSum(0, 0, m_imageWidth - 1, m_imageHeight - 1), m_pixelSum->getPixelSum(0, 0, m_imageWidth - 1, m_imageHeight - 1));
+}
+
+TEST_F(PS_IntegralImageTest, corner_case_all_max)
+{
+    std::vector<unsigned char> localImage(PixelSum::bufferDimensionLimit * PixelSum::bufferDimensionLimit);
+    for (auto& pixel : localImage)
+    {
+        pixel = 0xFF;
+    }
+    
+    std::unique_ptr<PixelSum> pixelSum = std::make_unique<PixelSum>(localImage.data(), PixelSum::bufferDimensionLimit, PixelSum::bufferDimensionLimit);
+    ASSERT_EQ(0xFF000000, pixelSum->getPixelSum(0, 0, PixelSum::bufferDimensionLimit - 1, PixelSum::bufferDimensionLimit - 1));
 }
 
 // advanced parametrized test, to check functionality in more complicated and unpredictable case
