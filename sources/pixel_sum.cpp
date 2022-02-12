@@ -81,6 +81,33 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
     }
 }
 
+PixelSum::PixelSum(const PixelSum& original)
+{
+    //assuming that original is always valid, since you cannot construct invalid object
+    //reinterpret_cast case it is the only possible solution to break the algorythm
+    //but in the case of reinterpret cast hack, it is hard to detect violation. 
+    //need to create some keys/checksums to validate input data. assume this is out of the task scope
+
+    copyContent(original);
+}
+
+PixelSum& PixelSum::operator= (const PixelSum& original)
+{
+    //the same note as for Copy Constructor
+    copyContent(original);
+    return *this;
+}
+
+void PixelSum::copyContent(const PixelSum& original)
+{
+    // just copy content of the original object
+    m_integralImage = original.m_integralImage;
+    m_imageHeight = original.m_imageHeight;
+    m_imageWidth = original.m_imageWidth;
+    m_integralImageHeight = original.m_integralImageHeight;
+    m_integralImageWidth = original.m_integralImageWidth;
+}
+
 unsigned int PixelSum::getPixelSum(int x0, int y0, int x1, int y1) const
 {
     // TODO: whole input correction block loosk ugle. refactoring is required. but tomorrow.

@@ -47,6 +47,9 @@ public:
 
     static int bufferDimensionLimit;
 private:
+
+    void copyContent(const PixelSum& original);
+
     uint32_t m_imageWidth = 0;
     uint32_t m_imageHeight = 0;
 
