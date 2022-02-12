@@ -141,12 +141,22 @@ TEST_F(PS_AverageTests, negative_out_of_y_image_average)
 
 TEST_F(PS_AverageTests, negative_out_of_image)
 {
-    ASSERT_DOUBLE_EQ(0, m_pixelSum->getPixelAverage(100, -1000, m_imageWidth - 25, -50));
+    ASSERT_DOUBLE_EQ(0., m_pixelSum->getPixelAverage(100, -1000, m_imageWidth - 25, -50));
 }
 
 TEST_F(PS_AverageTests, positive_out_of_image)
 {
-    ASSERT_DOUBLE_EQ(0, m_pixelSum->getPixelAverage(m_imageWidth + 100, 10, m_imageWidth + 25, 50));
+    ASSERT_DOUBLE_EQ(0., m_pixelSum->getPixelAverage(m_imageWidth + 100, 10, m_imageWidth + 25, 50));
+}
+
+TEST_F(PS_AverageTests, positive_away_of_image)
+{
+    ASSERT_DOUBLE_EQ(0., m_pixelSum->getPixelAverage(m_imageWidth + 100, m_imageHeight + 10, m_imageWidth + 150, m_imageHeight + 50));
+}
+
+TEST_F(PS_AverageTests, negative_away_of_image)
+{
+    ASSERT_DOUBLE_EQ(0., m_pixelSum->getPixelAverage(-100, -10, -100, -50));
 }
 
 TEST_F(PS_AverageTests, full_image_counted_for_copied_object)

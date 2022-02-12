@@ -12,7 +12,6 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
     }
     // well since no clear specification about sizes restrictions were provided
     // i assume 0 can be treated as an invalid size
-    // Comment: to reduce amount of checks I'd propose to use unsiged type
     if (xWidth <= 0 || yHeight <= 0)
     {
         throw NegativeOrZeroSizeProvided();
@@ -21,26 +20,26 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
     {
         throw MaximumSizeExceeded();
     }
-
     // looks like i didn't miss any obvious input issue. 
     // The only remaining is discrepancy between buffer real size and provided sizes
 
     // Calculate integral image.
-    // value retrival algorythm requires to check previous x (x-1) and y (y-1) values we should secure border case
+    // Value retrival algorythm requires to check previous x (x-1) and y (y-1) values. We should secure border case
     // also keep in mind that retrieving functions should return value as fast as possible
-    // so we have to avoid unnecessary checks at all costs when we are asking for the region 
-    // where x0 = 0 or y0 = 0. x0 - 1 or y0 - 1. this case will lead to negative indexed item access and crash.
+    // so we have to avoid unnecessary checks at all costs. When we are asking for the region 
+    // where x0 = 0 or y0 = 0. x0 - 1 or y0 - 1 will lead to negative indexed item access and crash.
     // we have no memory restrictions lets add safe zones here filled with zeroes:
     // 0 0 0 0
     // 0 X X X
     // 0 X X X
     // 0 X X X
+    // m_shitf is a depth of the safe zone, eqials to 1
     m_integralImageWidth = xWidth + m_shift;
     m_integralImageHeight = yHeight + m_shift;
     m_integralImage.resize(m_integralImageWidth * m_integralImageHeight);
     m_nonZeroIntegralImage.resize(m_integralImageWidth * m_integralImageHeight);
     
-    // all stored parameters are related to the original image.
+    // Parameters related to the original image.
     m_imageWidth = xWidth;
     m_imageHeight = yHeight;
 
@@ -50,19 +49,20 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
         m_integralImage[i] = 0;
         m_nonZeroIntegralImage[i] = 0;
     }
-    // calculate the integral image using 2x2 window, kkeping in mind safe zones
+    // calculate the integral image using 2x2 window, keeping in mind safe zone
+    // this mean that x-1 and y-1 for the border elements will return 0, 
+    // and won't affect values of the summed table
     // integralValue[x,y] = buffer[x,y] + integralValue[x-1,y] + integralValue[x, y-1] - integralValue[x-1,y-1] 
     for (uint32_t line = 0; line < m_imageHeight; ++line)
     {
         const uint32_t y = line * m_imageWidth;
         uint32_t iiY = (line + m_shift) * m_integralImageWidth;
+
         // the first item in every line will be 0. y safe zone
         m_integralImage[iiY] = 0;
         m_nonZeroIntegralImage[iiY] = 0;
 
-        // calculate the integral image. since safe zone values a 0, 
-        // we don't need to add special case for border coordinates.
-
+        // calculate the rest of integral image. 
         for (uint32_t x = 0; x < m_imageWidth; ++x)
         {
             const uint32_t iiX = x + m_shift;
@@ -110,7 +110,7 @@ void PixelSum::copyContent(const PixelSum& original)
 
 unsigned int PixelSum::getPixelSum(int x0, int y0, int x1, int y1) const
 {
-    // if no elements are requested, return 0 as their sum;
+    // if no elements are requested from our image, return 0 as their sum;
     if (!validateAndFixInput(x0, y0, x1, y1))
     {
         return 0;
@@ -121,13 +121,13 @@ unsigned int PixelSum::getPixelSum(int x0, int y0, int x1, int y1) const
 
 double PixelSum::getPixelAverage(int x0, int y0, int x1, int y1) const
 {
-    uint32_t num_elements = validateAndFixInput(x0, y0, x1, y1);
-    if (0 == num_elements)
+    uint32_t numElements = validateAndFixInput(x0, y0, x1, y1);
+    if (0 == numElements)
     {
         return 0;
     }
 
-    return (double)calculateFrankCrowValue(m_integralImage, x0, y0, x1, y1) / num_elements;
+    return (double)calculateFrankCrowValue(m_integralImage, x0, y0, x1, y1) / numElements;
 }
 
 int PixelSum::getNonZeroCount(int x0, int y0, int x1, int y1) const
@@ -146,12 +146,12 @@ double PixelSum::getNonZeroAverage(int x0, int y0, int x1, int y1) const
         return 0;
     }
     // nan is not allowed for us here. we should return 0 if no elements were found in requested widnow
-    int num_elements = calculateFrankCrowValue(m_nonZeroIntegralImage, x0, y0, x1, y1);
-    if (0 == num_elements)
+    int nonZeroElements = calculateFrankCrowValue(m_nonZeroIntegralImage, x0, y0, x1, y1);
+    if (0 == nonZeroElements)
     {
         return 0;
     }
-    return (double)calculateFrankCrowValue(m_integralImage, x0, y0, x1, y1)/num_elements;
+    return (double)calculateFrankCrowValue(m_integralImage, x0, y0, x1, y1)/ nonZeroElements;
 }
 
 uint32_t PixelSum::calculateFrankCrowValue(const std::vector<uint32_t>& table, int x0, int y0, int x1, int y1) const
@@ -164,7 +164,7 @@ uint32_t PixelSum::calculateFrankCrowValue(const std::vector<uint32_t>& table, i
 uint32_t PixelSum::validateAndFixInput(int& x0, int& y0, int& x1, int& y1) const
 {
     // calculate number of elements that we should use in our calculations
-    uint32_t num_elements = 0;
+    uint32_t numElements = 0;
     // input correction. swap coordinates if order is incorrect
     if (x0 > x1)
     {
@@ -179,24 +179,24 @@ uint32_t PixelSum::validateAndFixInput(int& x0, int& y0, int& x1, int& y1) const
         x0 > static_cast<int>(m_imageWidth) ||
         y0 > static_cast<int>(m_imageHeight))
     {
-        return num_elements; // in this case it is 0;
+        return numElements; // in this case it is 0;
     }
     // save number of elements here.
-    // add 1 for both coordinates since boundaries are inclusive
-    num_elements = (x1 - x0 + 1) * (y1 - y0 + 1);
+    // add 1 to both coordinates since boundaries are included
+    numElements = (x1 - x0 + 1) * (y1 - y0 + 1);
 
-    // it is impossible to have 0 here, if it's happened, then all checks above has a misstake
-    assert(num_elements > 0);
+    // it is impossible to have 0 here, if it's happened, then all checks above has a mistake
+    assert(numElements > 0);
 
     // move bounds inside the image, and linearize them.
     // from this moment coordinates are no longer represent real number of elements
     // that we should use in our calculations, they are truncated by the image
     y0 = std::max(0, y0) * m_integralImageWidth;
-    y1 = std::min(y1 + m_shift, m_integralImageHeight - m_shift) * m_integralImageWidth;
+    y1 = std::min(y1 + m_shift, m_integralImageHeight - 1) * m_integralImageWidth;
     x0 = std::max(0, x0);
-    x1 = std::min(x1 + m_shift, m_integralImageWidth - m_shift);
+    x1 = std::min(x1 + m_shift, m_integralImageWidth - 1);
 
-    return num_elements;
+    return numElements;
 }
 
 // EOF

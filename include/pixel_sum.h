@@ -64,7 +64,7 @@ private:
     // For non-zeroes use the same approach, create summed table where 
     //  - 0 if pixel is zero
     //  - 1 if pixel has value
-    // eill be summed instead of value
+    // will be summed instead of value
     std::vector<uint32_t> m_nonZeroIntegralImage;
 
     uint32_t m_integralImageWidth = 1;

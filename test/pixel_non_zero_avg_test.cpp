@@ -119,6 +119,15 @@ TEST_F(PS_NonZeroesAverageTests, positive_out_of_image)
     ASSERT_DOUBLE_EQ(0, m_pixelSum->getNonZeroAverage(m_imageWidth + 100, 10, m_imageWidth + 25, 50));
 }
 
+TEST_F(PS_NonZeroesAverageTests, positive_away_of_image)
+{
+    ASSERT_DOUBLE_EQ(0, m_pixelSum->getNonZeroAverage(m_imageWidth + 100, m_imageHeight + 10, m_imageWidth + 150, m_imageHeight + 50));
+}
+
+TEST_F(PS_NonZeroesAverageTests, negative_away_of_image)
+{
+    ASSERT_DOUBLE_EQ(0, m_pixelSum->getNonZeroAverage(-100, -10, -100, -50));
+}
 
 TEST_F(PS_NonZeroesAverageTests, full_image_counted_for_copied_object)
 {
