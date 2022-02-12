@@ -41,6 +41,7 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
     m_integralImageWidth = xWidth + m_shift;
     m_integralImageHeight = yHeight + m_shift;
     m_integralImage.resize(m_integralImageWidth * m_integralImageHeight);
+    m_nonZeroIntegralImage.resize(m_integralImageWidth * m_integralImageHeight);
     
     // all stored parameters are related to the original image.
     m_imageWidth = xWidth;
@@ -49,24 +50,17 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
     for (uint32_t i = 0; i < m_integralImageWidth; ++i)
     {
         m_integralImage[i] = 0;
+        m_nonZeroIntegralImage[i] = 0;
     }
-    // the first item in every line will be 0. here we create y = 0 safe zone
-    // ii here abbreviation for integral image
-    uint32_t iiY = m_shift * m_integralImageWidth;
-    m_integralImage[iiY] = 0;
-    // keep in mind that image in m_integralImage is shifted by 1 on X and Y
-    // prepare integral image preprocessed table also known as summed-area table
-    // step one: plant the initial seed: [0,0] (here [1,1]) item equals to the value on the provided image
-    m_integralImage[m_shift + iiY] = buffer[0];
-
-    // calculate the integral image using 2x2 window
+    // calculate the integral image using 2x2 window, kkeping in mind safe zones
     // integralValue[x,y] = buffer[x,y] + integralValue[x-1,y] + integralValue[x, y-1] - integralValue[x-1,y-1] 
     for (uint32_t line = 0; line < m_imageHeight; ++line)
     {
         const uint32_t y = line * m_imageWidth;
-        iiY = (line + m_shift) * m_integralImageWidth;
+        uint32_t iiY = (line + m_shift) * m_integralImageWidth;
         // the first item in every line will be 0. y safe zone
         m_integralImage[iiY] = 0;
+        m_nonZeroIntegralImage[iiY] = 0;
 
         // calculate the integral image. since safe zone values a 0, 
         // we don't need to add special case for border coordinates.
@@ -78,6 +72,13 @@ PixelSum::PixelSum(const unsigned char* buffer, int xWidth, int yHeight)
                 + m_integralImage[iiX + (iiY - m_integralImageWidth)]
                 + m_integralImage[iiX - 1 + iiY]
                 - m_integralImage[iiX - 1 + (iiY - m_integralImageWidth)];
+
+            // create non-zero image mask
+            const uint32_t nonZero = buffer[x + y] ? 1 : 0;
+            m_nonZeroIntegralImage[iiX + iiY] = nonZero
+                + m_nonZeroIntegralImage[iiX + (iiY - m_integralImageWidth)]
+                + m_nonZeroIntegralImage[iiX - 1 + iiY]
+                - m_nonZeroIntegralImage[iiX - 1 + (iiY - m_integralImageWidth)];
         }
     }
 }
@@ -129,6 +130,15 @@ double PixelSum::getPixelAverage(int x0, int y0, int x1, int y1) const
     }
 
     return (double)calculateFrankCrowValue(m_integralImage, x0, y0, x1, y1) / num_elements;
+}
+
+int PixelSum::getNonZeroCount(int x0, int y0, int x1, int y1) const
+{
+    if (!validateAndFixInput(x0, y0, x1, y1))
+    {
+        return 0;
+    }
+    return calculateFrankCrowValue(m_nonZeroIntegralImage, x0, y0, x1, y1);
 }
 
 uint32_t PixelSum::calculateFrankCrowValue(const std::vector<uint32_t>& table, int x0, int y0, int x1, int y1) const

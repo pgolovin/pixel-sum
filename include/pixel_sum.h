@@ -50,7 +50,7 @@ private:
 
     void copyContent(const PixelSum& original);
     uint32_t validateAndFixInput(int& x0, int& y0, int& x1, int& y1) const;
-    // calculate value using proposed algorythms for Frank Crow for MipMaps
+    // Calculate value using proposed algorythms for Frank Crow for MipMaps
     // it should be inlined here, i suppose compiler will do this for me;
     uint32_t calculateFrankCrowValue(const std::vector<uint32_t>& table, int x0, int y0, int x1, int y1) const;
 
@@ -65,10 +65,15 @@ private:
     // A: uint32_t will not work here we should use wider types like uint64_t
     //    the same situation if cell size of initial image is not a Byte but Word
     std::vector<uint32_t> m_integralImage;
+    // For non-zeroes use the same approach, create summed table where instead of falue will have 
+    //  - 0 if pixel is zero
+    //  - 1 if pixel has value
+    std::vector<uint32_t> m_nonZeroIntegralImage;
+
     uint32_t m_integralImageWidth = 1;
     uint32_t m_integralImageHeight = 1;
 
-    // algorithm uses paradigm to store summed area table with shift according to original image
+    // Algorithm uses paradigm to store summed area table with shift according to original image
     // see details in implementation
     const uint32_t m_shift = 1;
 };
